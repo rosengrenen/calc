@@ -4,135 +4,86 @@
 #include <iostream>
 #include <stack>
 
-void Calculator::calculate(const std::string& input)
+double Calculator::calculate(const std::string& input)
 {
-  this->parse(input);
-  // this->evalutate("Whatever is returned by parse");
+  auto split = this->split(input);
+  this->parse(split, this->expr.term);
+  return this->expr.evaluate();
 }
 
-//class Value
-//{
-//public:
-//  virtual double calc() = 0;
-//};
-//
-//class Term
-//{
-//public:
-//
-//  double calc()
-//  {
-//    return this->opr->calc(left->calc(), right->calc());
-//  }
-//private:
-//  std::unique_ptr<Term> left;
-//  std::unique_ptr<Term> right;
-//  std::unique_ptr<Operator> opr;
-//};
-//
-//class Expression
-//{
-//public:
-//  // Operators?
-//private:
-//  std::vector<Term> expr;
-//};
-
-double Calculator::parse(std::string input)
+void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Term>& term)
 {
-  // Split
-  std::string delimiters = "*/%+-()^,"; // []
-  std::string chunk;
-  std::vector<std::string> parts;
-  bool flag;
-  for (auto& part : input)
-  {
-    if (part == ' ')
-    {
-      continue;
-    }
-    flag = false;
-    for (auto& delimiter : delimiters)
-    {
-      if (part == delimiter)
-      {
-        flag = true;
-        if (!chunk.empty())
-        {
-          parts.push_back(chunk);
-        }
-        parts.emplace_back(1, delimiter);
-        chunk = "";
-        break;
-      }
-    }
-    if (!flag)
-    {
-      chunk += part;
-    }
-  }
-  if (!chunk.empty())
-  {
-    parts.push_back(chunk);
-  }
   // Validate!
   // Add asterixes between constant/parentheses and parentheses where no operator is present
-  // Remove empty spaces
-  /* for (std::string::size_type i = 0; (i = input.find(" ", i)) != std::string::npos;)
-{
-  input.replace(i, 1, "");
-}*/
-// Variables (ans)
-// Split the string *, /, %, +, -, (, )
-// 1. Functions
-// 2. Parentheses
-// 3. ^
-// 4. * / %
-// 5. + -
-// Note: unary plus and minus have to be taken care of
-  std::cout << "Durr.." << std::endl;
-  auto itr = input.begin();
-  int parenthesesLevel = 0;
-  // Make own, this is already used before
-  int operatorLevel = 0;
-  // Make flag check for operator level available?
-  std::vector<std::pair<std::vector<std::string>::iterator, std::string>> offsets;
-  size_t offset = 0;
+  // Variables (ans)
+  // Note: unary plus and minus have to be taken care of
+
+  std::vector<std::vector<std::string>::iterator> offsets;
   while (true)
   {
+    int operatorLevel = 0;
+    offsets.clear();
     offsets.resize(0);
-    for (auto& opr : this->operators)
+    auto itr = parts.begin();
+    while (itr != parts.end())
     {
-      if (opr.second.first == operatorLevel)
+      for (auto& opr : this->operators)
       {
-        offsets.push_back(std::make_pair(std::find(parts.begin() + offset, parts.end(), opr.first), opr.first));
-        //if (itr == input.end())
-        //{
-        //  // Nothing more to find, increase the operator level
-        //}
-        //else
-        //{
-
-        //}
-      }
-    }
-    if (offsets.empty())
-    {
-      break;
-    }
-    else
-    {
-      int min = parts.size();
-      for (auto offset : offsets)
-      {
-        if (parts.begin() - offset.first < min)
+        if (opr.second.first == operatorLevel)
         {
-          min = parts.begin() - offset.first;
+          if (opr.first == *itr)
+          {
+            int parentheses = 0;
+            for (auto it = parts.begin(); it != itr; ++it)
+            {
+              if (*it == "(")
+              {
+                parentheses++;
+              }
+              else if (*it == ")")
+              {
+                parentheses--;
+              }
+            }
+            if (parentheses == 0)
+            {
+              offsets.push_back(std::find(itr, parts.end(), opr.first));
+            }
+          }
         }
       }
-      // Now we know which one to wrap
+      if (!offsets.empty())
+      {
+        ptrdiff_t min = parts.size();
+        for (auto& offset : offsets)
+        {
+          if (offset - parts.begin() < min)
+          {
+            min = offset - parts.begin();
+            itr = parts.begin() + min;
+          }
+        }
+        if (parts.begin() + min != parts.end())
+        {
+          term->left = std::make_unique<Term>();
+          this->parse(std::vector<std::string>{ parts.begin(), parts.begin() + min }, term->left);
+          term->opr = this->operators.find(parts.at(min))->second.second;
+          term->right = std::make_unique<Term>();
+          this->parse(std::vector<std::string>{ parts.begin() + min + 1, parts.end() }, term->right);
+          return;
+          //this->parse()
+        }
+        else
+          std::cout << "Nope, nothing found" << std::endl;
+      }
+      else
+      {
+        //operatorLevel++;
+        itr++;
+      }
     }
   }
+
   //std::vector<Expression> expression;
   //std::stack<std::vector<Expression> *> current;
   //current.push(&expression);
@@ -280,7 +231,6 @@ double Calculator::parse(std::string input)
   //  }
   //}
   // Look for operators in order of operations (* % /) -> (+ -)
-  return 0.0;
 }
 
 bool Calculator::isNumber(const std::string& input)
@@ -335,4 +285,43 @@ bool Calculator::isOperator(const std::string& input)
 bool Calculator::isOperand(const std::string& input)
 {
   return false;
+}
+
+std::vector<std::string> Calculator::split(const std::string& input)
+{
+  std::string delimiters = "*/%+-()^,"; // []
+  std::string chunk;
+  std::vector<std::string> parts;
+  bool flag;
+  for (auto& part : input)
+  {
+    if (part == ' ')
+    {
+      continue;
+    }
+    flag = false;
+    for (auto& delimiter : delimiters)
+    {
+      if (part == delimiter)
+      {
+        flag = true;
+        if (!chunk.empty())
+        {
+          parts.push_back(chunk);
+        }
+        parts.emplace_back(1, delimiter);
+        chunk = "";
+        break;
+      }
+    }
+    if (!flag)
+    {
+      chunk += part;
+    }
+  }
+  if (!chunk.empty())
+  {
+    parts.push_back(chunk);
+  }
+  return parts;
 }

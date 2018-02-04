@@ -56,5 +56,11 @@
     <ClInclude Include="src\operations\Operator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Expression.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Term.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

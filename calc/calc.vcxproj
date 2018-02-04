@@ -27,6 +27,8 @@
     <ClInclude Include="src\functions\Function.h" />
     <ClInclude Include="src\functions\Logarithm.h" />
     <ClInclude Include="src\functions\Root.h" />
+    <ClInclude Include="src\Expression.h" />
+    <ClInclude Include="src\Term.h" />
     <ClInclude Include="src\operations\Addition.h" />
     <ClInclude Include="src\operations\Division.h" />
     <ClInclude Include="src\operations\Exponentiation.h" />
