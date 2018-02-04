@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Operation.h"
+#include "Operator.h"
 
-class Addition : public Operation
+class Addition : public Operator
 {
 public:
   virtual double calc(double left, double right) override

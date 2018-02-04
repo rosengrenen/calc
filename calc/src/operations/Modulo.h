@@ -2,9 +2,9 @@
 
 #include <cmath>
 
-#include "Operation.h"
+#include "Operator.h"
 
-class Modulo : public Operation
+class Modulo : public Operator
 {
 public:
   virtual double calc(double left, double right) override

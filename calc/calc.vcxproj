@@ -19,7 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Calculator.cpp" />
     <ClCompile Include="src\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Calculator.h" />
+    <ClInclude Include="src\functions\Function.h" />
+    <ClInclude Include="src\functions\Logarithm.h" />
+    <ClInclude Include="src\functions\Root.h" />
+    <ClInclude Include="src\operations\Addition.h" />
+    <ClInclude Include="src\operations\Division.h" />
+    <ClInclude Include="src\operations\Exponentiation.h" />
+    <ClInclude Include="src\operations\Modulo.h" />
+    <ClInclude Include="src\operations\Multiplication.h" />
+    <ClInclude Include="src\operations\Operator.h" />
+    <ClInclude Include="src\operations\Subtraction.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

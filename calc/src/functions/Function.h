@@ -5,6 +5,7 @@
 class Function
 {
 public:
+  Function() = default;
   virtual double calc() = 0;
   void addArgument(double arg)
   {

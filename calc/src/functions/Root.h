@@ -10,13 +10,13 @@ public:
   virtual double calc() override
   {
     double value;
-    double degree = 2;
+    double n = 2;
     if (this->arguments.size() > 0)
     {
       value = this->arguments.at(0);
       if (this->arguments.size() > 1)
       {
-        degree = this->arguments.at(1);
+        n = this->arguments.at(1);
       }
     }
     else if (this->arguments.empty())
@@ -24,6 +24,6 @@ public:
       //TODO: error class
       throw 0;
     }
-    return std::pow(value, 1.0 / degree);
+    return std::pow(value, 1.0 / n);
   }
 };

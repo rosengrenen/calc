@@ -9,5 +9,6 @@ public:
   {
     double value;
     double base;
+    return 0.0;
   }
 };
