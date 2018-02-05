@@ -1,32 +1,45 @@
 #include "Calculator.h"
 
 #include <algorithm>
-#include <iostream>
-#include <stack>
 
 #include "operands/Constant.h"
 #include "operands/Expression.h"
 #include "operands/FunctionCall.h"
 
-double Calculator::calculate(std::string input)
+double Calculator::assign(const std::vector<std::string>& parts)
 {
-  //TODO: Validate!
-  auto split = this->split(input);
-  //TODO: Add asterixes between constant/parentheses and parentheses where no operator is present
-  this->parse(split, this->expression);
+
+}
+
+double Calculator::calculate(const std::vector<std::string>& parts)
+{
+  this->parse(parts, this->expression);
   return this->expression->calc();
+}
+
+double Calculator::evaluate(const std::string & input)
+{
+  this->expression = nullptr;
+  auto split = this->split(input);
+  return this->calculate(split);
 }
 
 void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term)
 {
-  //TODO: variables and "ans"
-  //TODO: unary plus and minus
+  //TODO: assign to variable
+  // Remove unnecessary parentheses
+  while (parts.at(0) == "(" && parts.at(parts.size() - 1) == ")")
+  {
+    parts.erase(parts.begin());
+    parts.erase(parts.end() - 1);
+  }
   if (parts.empty())
   {
     throw 0;
   }
   else if (parts.size() == 1)
   {
+    // Find the variable
     auto itr = this->constants.find(parts.at(0));
     if (itr != this->constants.end())
     {
@@ -37,12 +50,6 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
       term = std::make_unique<Constant>(std::stod(parts.at(0)));
     }
     return;
-  }
-  // Remove unnecessary parentheses
-  while (parts.at(0) == "(" && parts.at(parts.size() - 1) == ")")
-  {
-    parts.erase(parts.begin());
-    parts.erase(parts.end() - 1);
   }
   int operatorLevel = 0;
   auto itr = parts.begin();
@@ -139,51 +146,27 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
   }
 }
 
-std::vector<std::string> Calculator::split(std::string input)
+std::vector<std::string> Calculator::split(const std::string& input)
 {
-  std::vector<std::string> delimiters = {
-    "^",
-    "*",
-    "/",
-    "%",
-    "+",
-    "-",
-    "(",
-    ")",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-    "ans"
-  };
+  std::string chunk;
+  std::vector<std::string> parts;
+  std::vector<std::string> delimiters;
+  for (auto itr = this->operators.begin(); itr != this->operators.end(); ++itr)
+  {
+    delimiters.push_back(itr->first);
+  }
+  for (auto itr = this->functions.begin(); itr != this->functions.end(); ++itr)
+  {
+    delimiters.push_back(itr->first);
+  }
   for (auto itr = this->constants.begin(); itr != this->constants.end(); ++itr)
   {
     delimiters.push_back(itr->first);
   }
-  std::string chunk;
-  std::vector<std::string> parts;
+  for (auto itr = this->variables.begin(); itr != this->variables.end(); ++itr)
+  {
+    delimiters.push_back(itr->first);
+  }
   for (auto itr = input.begin(); itr != input.end();)
   {
     if (*itr == ' ')
@@ -198,24 +181,42 @@ std::vector<std::string> Calculator::split(std::string input)
       {
         found = true;
         itr += it->size();
+        bool unaryFound = false;
+        if (!parts.empty())
+        {
+          for (auto& opr : this->operators)
+          {
+            if (parts.back() == opr.first)
+            {
+              if (opr.second.unary)
+              {
+                if ((parts.size() > 1 && *(parts.end() - 2) == "(") ||
+                  (parts.size() == 0))
+                {
+                  unaryFound = true;
+                  if (chunk.empty())
+                  {
+                    parts.back() += *it;
+                    break;
+                  }
+                  else
+                  {
+                    parts.back() += chunk;
+                    parts.push_back(*it);
+                    chunk.clear();
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (unaryFound)
+        {
+          break;
+        }
         if (!chunk.empty())
         {
-          //auto i = this->operators.find(chunk);
-          //if (i != this->operators.end())
-          //{
-          //  if (i->second.unary)
-          //  {
-          //    // (-5)
-          //    // -5
-          //    if (!parts.empty())
-          //    {
-          //      if (parts.back() == " ")
-          //      {
-
-          //      }
-          //    }
-          //  }
-          //}
           parts.push_back(chunk);
           chunk.clear();
         }
@@ -238,7 +239,7 @@ std::vector<std::string> Calculator::split(std::string input)
       if (itr + 1 != parts.end())
       {
         if ((*itr == ")" && *(itr + 1) == "(") ||
-            (this->isConstant(*itr) && *(itr + 1) == "(") ||
+          (this->isConstant(*itr) && *(itr + 1) == "(") ||
             (*itr == ")" && this->isConstant(*(itr + 1))) ||
             (this->isConstant(*itr) && this->isConstant(*(itr + 1))))
         {
