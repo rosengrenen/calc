@@ -4,86 +4,90 @@
 #include <iostream>
 #include <stack>
 
+#include "operands/Constant.h"
+#include "operands/Expression.h"
+#include "operands/FunctionCall.h"
+
 double Calculator::calculate(const std::string& input)
 {
+  // Validate!
   auto split = this->split(input);
-  this->parse(split, this->expr.term);
-  return this->expr.evaluate();
+  // Add asterixes between constant/parentheses and parentheses where no operator is present
+  this->parse(split, this->expression);
+  std::cout << this->expression->print();
+  //return this->expr.evaluate();
+  return 0.0;
 }
 
-void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Term>& term)
+void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term)
 {
-  // Validate!
-  // Add asterixes between constant/parentheses and parentheses where no operator is present
   // Variables (ans)
   // Note: unary plus and minus have to be taken care of
-
-  std::vector<std::vector<std::string>::iterator> offsets;
+  if (parts.empty())
+  {
+    throw 0;
+  }
+  else if (parts.size() == 1)
+  {
+    term = std::make_unique<Constant>(std::stod(parts.at(0)));
+    return;
+  }
+  // Remove unnecessary parentheses
+  while (parts.at(0) == "(" && parts.at(parts.size() - 1) == ")")
+  {
+    parts.erase(parts.begin());
+    parts.erase(parts.end() - 1);
+  }
+  int operatorLevel = 0;
+  auto itr = parts.begin();
   while (true)
   {
-    int operatorLevel = 0;
-    offsets.clear();
-    offsets.resize(0);
-    auto itr = parts.begin();
-    while (itr != parts.end())
+    bool done = true;
+    if (itr == parts.end())
     {
-      for (auto& opr : this->operators)
+      operatorLevel++;
+      itr = parts.begin();
+    }
+    for (auto& opr : this->operators)
+    {
+      if (opr.second.first == operatorLevel)
       {
-        if (opr.second.first == operatorLevel)
+        done = false;
+        if (opr.first == *itr)
         {
-          if (opr.first == *itr)
+          // The current part is a fitting operator
+          // Make sure it is at base level (not in nested parentheses)
+          int parentheses = 0;
+          for (auto i = parts.begin(); i < itr; ++i)
           {
-            int parentheses = 0;
-            for (auto it = parts.begin(); it != itr; ++it)
+            if (*i == "(")
             {
-              if (*it == "(")
-              {
-                parentheses++;
-              }
-              else if (*it == ")")
-              {
-                parentheses--;
-              }
+              parentheses++;
             }
-            if (parentheses == 0)
+            else if (*i == ")")
             {
-              offsets.push_back(std::find(itr, parts.end(), opr.first));
+              parentheses--;
             }
           }
-        }
-      }
-      if (!offsets.empty())
-      {
-        ptrdiff_t min = parts.size();
-        for (auto& offset : offsets)
-        {
-          if (offset - parts.begin() < min)
+          if (parentheses == 0)
           {
-            min = offset - parts.begin();
-            itr = parts.begin() + min;
+            term = std::make_unique<Expression>();
+            this->parse(std::vector<std::string>{ parts.begin(), itr }, term->left);
+
+            term->opr = this->operators.find(*itr)->second.second;
+            this->parse(std::vector<std::string>{ itr + 1, parts.end() }, term->right);
+            return;
           }
+          continue;
         }
-        if (parts.begin() + min != parts.end())
-        {
-          term->left = std::make_unique<Term>();
-          this->parse(std::vector<std::string>{ parts.begin(), parts.begin() + min }, term->left);
-          term->opr = this->operators.find(parts.at(min))->second.second;
-          term->right = std::make_unique<Term>();
-          this->parse(std::vector<std::string>{ parts.begin() + min + 1, parts.end() }, term->right);
-          return;
-          //this->parse()
-        }
-        else
-          std::cout << "Nope, nothing found" << std::endl;
-      }
-      else
-      {
-        //operatorLevel++;
-        itr++;
       }
     }
+    if (done)
+    {
+      break;
+    }
+    itr++;
   }
-
   //std::vector<Expression> expression;
   //std::stack<std::vector<Expression> *> current;
   //current.push(&expression);

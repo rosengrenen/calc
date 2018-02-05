@@ -56,10 +56,16 @@
     <ClInclude Include="src\operations\Operator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Expression.h">
+    <ClInclude Include="src\operands\Operand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Term.h">
+    <ClInclude Include="src\operands\Constant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\operands\FunctionCall.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\operands\Expression.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
