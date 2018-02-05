@@ -135,11 +135,85 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
 
 std::vector<std::string> Calculator::split(const std::string& input)
 {
-  std::string delimiters = "*/%+-()^,"; // []
+  std::vector<std::string> delimiters = {
+    "^",
+    "*",
+    "/",
+    "%",
+    "+",
+    "-",
+    "(",
+    ")",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+    "ans"
+  };
+  for (auto itr = this->constants.begin(); itr != this->constants.end(); ++itr)
+  {
+    delimiters.push_back(itr->first);
+  }
   std::string chunk;
   std::vector<std::string> parts;
   bool flag;
-  for (auto& part : input)
+  for (auto itr = input.begin(); itr != input.end();)
+  {
+    if (*itr == ' ')
+    {
+      continue;
+    }
+    size_t min = input.size();
+    size_t offset;
+    std::string found;
+    for (auto it = delimiters.begin(); it != delimiters.end(); ++it)
+    {
+      offset = input.find(*it, itr - input.begin());
+      if (offset < min)
+      {
+        min = offset;
+        found = *it;
+      }
+    }
+    if (offset < input.size())
+    {
+      itr += found.size();
+      if (!chunk.empty())
+      {
+        parts.push_back(chunk);
+        chunk.clear();
+      }
+      parts.push_back(found);
+    }
+    else
+    {
+      chunk += *itr;
+      itr++;
+    }
+  }
+  /*for (auto& part : input)
   {
     if (part == ' ')
     {
@@ -168,6 +242,6 @@ std::vector<std::string> Calculator::split(const std::string& input)
   if (!chunk.empty())
   {
     parts.push_back(chunk);
-  }
+  }*/
   return parts;
 }

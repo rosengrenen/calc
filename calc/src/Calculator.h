@@ -41,5 +41,10 @@ private:
     { "%", std::make_pair(1, std::make_shared<Modulo>()) },
     { "^", std::make_pair(2, std::make_shared<Exponentiation>()) },
   };
+  std::vector<std::pair<std::string, double>> constants
+  {
+    { std::make_pair("e",   2.718281828459045235) },
+    { std::make_pair("pi",  3.141592653589793238) }
+  };
 };
 
