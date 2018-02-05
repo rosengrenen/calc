@@ -10,19 +10,17 @@
 
 double Calculator::calculate(const std::string& input)
 {
-  // Validate!
+  //TODO: Validate!
   auto split = this->split(input);
-  // Add asterixes between constant/parentheses and parentheses where no operator is present
+  //TODO: Add asterixes between constant/parentheses and parentheses where no operator is present
   this->parse(split, this->expression);
-  std::cout << this->expression->print();
-  //return this->expr.evaluate();
-  return 0.0;
+  return this->expression->calc();
 }
 
 void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term)
 {
-  // Variables (ans)
-  // Note: unary plus and minus have to be taken care of
+  //TODO: variables and "ans"
+  //TODO: unary plus and minus
   if (parts.empty())
   {
     throw 0;
@@ -72,10 +70,11 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
           if (parentheses == 0)
           {
             term = std::make_unique<Expression>();
-            this->parse(std::vector<std::string>{ parts.begin(), itr }, term->left);
+            Expression *e = dynamic_cast<Expression *>(term.get());
+            this->parse(std::vector<std::string>{ parts.begin(), itr }, e->left);
 
-            term->opr = this->operators.find(*itr)->second.second;
-            this->parse(std::vector<std::string>{ itr + 1, parts.end() }, term->right);
+            e->opr = this->operators.find(*itr)->second.second;
+            this->parse(std::vector<std::string>{ itr + 1, parts.end() }, e->right);
             return;
           }
           continue;
@@ -88,207 +87,50 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
     }
     itr++;
   }
-  //std::vector<Expression> expression;
-  //std::stack<std::vector<Expression> *> current;
-  //current.push(&expression);
-  //for (int i = 0; i < parts.size(); ++i)
-  //{
-  //  // Find functions first tho
-  //  if (parts.at(i) == "(")
-  //  {
-  //    Expression e;
-  //    e.type = Expression::NOT_SINGLE;;
-  //    current.top()->push_back(e);
-  //    current.push(&current.top()->back().notSingle);
-  //  }
-  //  else if (parts.at(i) == ")")
-  //  {
-  //    current.pop();
-  //  }
-  //  else
-  //  {
-  //    Expression e;
-  //    e.type = Expression::SINGLE;
-  //    e.single = parts.at(i);
-  //    current.top()->push_back(e);
-  //  }
-  //}
-  //std::stack<std::vector<Expression> *> stack;
-  //stack.push(&expression);
-  //std::stack<int> i;
-  //i.push(0);
-  //while (!stack.empty())
-  //{
-  //  if (i.top() >= stack.top()->size())
-  //  {
-  //    i.pop();
-  //    stack.pop();
-  //  }
-  //  else if (stack.top()->at(i.top()).type == Expression::SINGLE)
-  //  {
-  //    for (int prints = 0; prints < stack.size() - 1; ++prints)
-  //    {
-  //      std::cout << "\t";
-  //    }
-  //    std::cout << stack.top()->at(i.top()).single << std::endl;
-  //    i.top()++;
-  //  }
-  //  else if (stack.top()->at(i.top()).type == Expression::NOT_SINGLE)
-  //  {
-  //    stack.push(&stack.top()->at(i.top()).notSingle);
-  //    i.top()++;
-  //    i.push(0);
-  //  }
-  //}
-  int a = 0;
-
-
-
-
-  /*struct StrLvl
+  // Find a function
+  for (auto itr = parts.begin(); itr != parts.end(); ++itr)
   {
-    int level;
-    std::string part;
-  };
-  int level = 0;
-  int aLevel = 0;
-  std::vector<std::vector<StrLvl>> expressions(1);
-  for (int i = 0; i < parts.size(); ++i)
-  {
-    if (parts.at(i) == "(")
+    // Iterate until we find a function
+    if (this->functions.find(*itr) != functions.end())
     {
-      level++;
-      if (expressions.size() < level + 1)
+      term = std::make_unique<FunctionCall>();
+      FunctionCall *f = dynamic_cast<FunctionCall *>(term.get());
+      f->func = this->functions.find(*itr)->second;
+      // Skip func name in iteration
+      itr++;
+      // Find that the parentheses level is 1, inside the function call parentheses, but not further
+      int parentheses = 0;
+      auto offset = itr + 1; // Skip func name and parentheses
+      for (auto i = itr; i != parts.end(); ++i)
       {
-        expressions.resize(level + 1);
+        if (*i == "(")
+        {
+          parentheses++;
+        }
+        else if (*i == ")")
+        {
+          parentheses--;
+        }
+        if (parentheses < 1)
+        {
+          // We've exited the function call parentheses, add from offset til end in the argument vector
+          f->args.push_back(nullptr);
+          this->parse({ offset, i }, f->args.back());
+          break;
+        }
+        if (parentheses == 1)
+        {
+          if (*i == ",")
+          {
+            f->args.push_back(nullptr);
+            this->parse({ offset, i }, f->args.back());
+            offset = i + 1;
+          }
+        }
       }
-      expressions.at(level).push_back({ aLevel, "(" });
-      aLevel++;
-      level++;
-      if (expressions.size() < level + 1)
-      {
-        expressions.resize(level + 1);
-      }
-    }
-    else if (parts.at(i) == ")")
-    {
-      level++;
-      if (expressions.size() < level + 1)
-      {
-        expressions.resize(level + 1);
-      }
-      aLevel--;
-      expressions.at(level).push_back({ aLevel, ")" });
-      level++;
-      if (expressions.size() < level + 1)
-      {
-        expressions.resize(level + 1);
-      }
-    }
-    else
-    {
-      expressions.at(level).push_back({ aLevel, parts.at(i) });
     }
   }
-  std::cout << "\n\n";
-  for (auto& expression : expressions)
-  {
-    if (!expression.empty())
-      for (int i = 0; i < expression.at(0).level; ++i)
-      {
-        std::cout << "\t";
-      }
-    for (auto& part : expression)
-    {
-
-      std::cout << part.part << " ";
-    }
-    std::cout << std::endl;
-  }*/
-  //for (int i = 0; i < parts.size(); ++i)
-  //{
-  //  const auto& f = this->functions.find(parts.at(i));
-  //  if (f != this->functions.end())
-  //  {
-  //    // Function found
-  //    // Foreach argument passed, add it as a parameter and then calc
-  //  }
-  //}
-
-  //for (int i = 0; i < parts.size(); ++i)
-  //{
-  //  if (parts.at(i) == "*")
-  //  {
-  //    // This would work for 5*5 but not (5)*(5+4)
-  //    if (this->isNumber(parts.at(i - 1)) && this->isNumber(parts.at(i + 1)))
-  //    {
-
-  //    }
-  //  }
-  //  else if (parts.at(i) == "/")
-  //  {
-
-  //  }
-  //  else if (parts.at(i) == "%")
-  //  {
-
-  //  }
-  //}
-  // Look for operators in order of operations (* % /) -> (+ -)
-}
-
-bool Calculator::isNumber(const std::string& input)
-{
-  return true;
-}
-
-//std::vector<std::string> Calculator::split(const std::string & input)
-//{
-//  std::string delimiters = "*/%+-()^,"; // []
-//  std::string chunk;
-//  std::vector<std::string> parts;
-//  bool flag;
-//  for (auto& part : input)
-//  {
-//    if (part == ' ')
-//    {
-//      continue;
-//    }
-//    flag = false;
-//    for (auto& delimiter : delimiters)
-//    {
-//      if (part == delimiter)
-//      {
-//        flag = true;
-//        if (!chunk.empty())
-//        {
-//          parts.push_back(chunk);
-//        }
-//        parts.emplace_back(1, delimiter);
-//        chunk = "";
-//        break;
-//      }
-//    }
-//    if (!flag)
-//    {
-//      chunk += part;
-//    }
-//  }
-//  if (!chunk.empty())
-//  {
-//    parts.push_back(chunk);
-//  }
-//  return parts;
-//}
-
-bool Calculator::isOperator(const std::string& input)
-{
-  return false;// return (this->operators.find(input) != this->operators.end());
-}
-
-bool Calculator::isOperand(const std::string& input)
-{
-  return false;
+  return;
 }
 
 std::vector<std::string> Calculator::split(const std::string& input)

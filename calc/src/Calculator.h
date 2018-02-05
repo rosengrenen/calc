@@ -25,12 +25,9 @@ class Calculator
 public:
   double calculate(const std::string& input);
   void parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term);
-  bool isNumber(const std::string& input);
-  bool isOperator(const std::string& input);
-  bool isOperand(const std::string& input);
   std::vector<std::string> split(const std::string& input);
 private:
-  std::unique_ptr<Operand> expression
+  std::unique_ptr<Operand> expression;
   std::unordered_map<std::string, std::shared_ptr<Function>> functions = {
     { "root", std::make_shared<Root>() },
     { "log", std::make_shared<Logarithm>() }

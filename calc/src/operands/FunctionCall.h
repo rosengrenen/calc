@@ -9,24 +9,14 @@
 class FunctionCall : public Operand
 {
 public:
-  std::string funcName;
   std::shared_ptr<Function> func;
+  std::vector<std::unique_ptr<Operand>> args;
   virtual double calc() override
   { 
-    return this->func->calc();
-  }
-  virtual std::string print() override
-  {
-    std::string output = "func(";
-    auto args = this->func->getArguments();
-    for (int i = 0; i < args.size(); ++i)
+    for (auto& arg : args)
     {
-      output += std::to_string(args.at(i));
-      if (i != args.size() - 1 && i != 0)
-      {
-        output += ", ";
-      }
+      this->func->addArgument(arg->calc());
     }
-    return output + ")";
+    return this->func->calc();
   }
 };

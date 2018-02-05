@@ -14,9 +14,4 @@ public:
   {
     return this->value;
   }
-  virtual std::string print() override
-  {
-    // Check significant figures
-    return std::to_string(value);
-  }
 };

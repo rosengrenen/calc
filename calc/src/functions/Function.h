@@ -11,10 +11,6 @@ public:
   {
     this->arguments.push_back(arg);
   }
-  auto getArguments() const
-  {
-    return this->arguments;
-  }
 protected:
   std::vector<double> arguments;
 };
