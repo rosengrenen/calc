@@ -9,7 +9,6 @@ class Logarithm : public Function
 public:
   virtual double calc() override
   {
-    //std::log()
     double value;
     double base = 10;
     if (this->arguments.empty())

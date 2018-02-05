@@ -8,7 +8,7 @@
 #include "operands/Expression.h"
 #include "operands/FunctionCall.h"
 
-double Calculator::calculate(const std::string& input)
+double Calculator::calculate(std::string input)
 {
   //TODO: Validate!
   auto split = this->split(input);
@@ -27,7 +27,15 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
   }
   else if (parts.size() == 1)
   {
-    term = std::make_unique<Constant>(std::stod(parts.at(0)));
+    auto itr = this->constants.find(parts.at(0));
+    if (itr != this->constants.end())
+    {
+      term = std::make_unique<Constant>(itr->second);
+    }
+    else
+    {
+      term = std::make_unique<Constant>(std::stod(parts.at(0)));
+    }
     return;
   }
   // Remove unnecessary parentheses
@@ -48,7 +56,7 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
     }
     for (auto& opr : this->operators)
     {
-      if (opr.second.first == operatorLevel)
+      if (opr.second.order == operatorLevel)
       {
         done = false;
         if (opr.first == *itr)
@@ -72,7 +80,7 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
             term = std::make_unique<Expression>();
             Expression *e = dynamic_cast<Expression *>(term.get());
             this->parse(std::vector<std::string>{ parts.begin(), itr }, e->left);
-            e->opr = this->operators.find(*itr)->second.second;
+            e->opr = this->operators.find(*itr)->second.opr;
             this->parse(std::vector<std::string>{ itr + 1, parts.end() }, e->right);
             return;
           }
@@ -122,16 +130,16 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
         }
         if (parentheses == 1 && *i == ",")
         {
-            f->args.push_back(nullptr);
-            this->parse({ offset, i }, f->args.back());
-            offset = i + 1;
+          f->args.push_back(nullptr);
+          this->parse({ offset, i }, f->args.back());
+          offset = i + 1;
         }
       }
     }
   }
 }
 
-std::vector<std::string> Calculator::split(const std::string& input)
+std::vector<std::string> Calculator::split(std::string input)
 {
   std::vector<std::string> delimiters = {
     "^",
@@ -176,7 +184,6 @@ std::vector<std::string> Calculator::split(const std::string& input)
   }
   std::string chunk;
   std::vector<std::string> parts;
-  bool flag;
   for (auto itr = input.begin(); itr != input.end();)
   {
     if (*itr == ' ')
@@ -186,18 +193,35 @@ std::vector<std::string> Calculator::split(const std::string& input)
     bool found = false;
     for (auto it = delimiters.begin(); it != delimiters.end(); ++it)
     {
-      auto a = std::find(input.begin(), input.end(), "hello");
-  //    if (std::find(itr, input.end(), *it) < itr + it->size())
-  //    {
-  //      found = true;
-  //      itr += it->size();
-  //      if (!chunk.empty())
-  //      {
-  //        parts.push_back(chunk);
-  //        chunk.clear();
-  //      }
-  //      break;
-  //    }
+      auto a = input.find(*it, itr - input.begin());
+      if (a == itr - input.begin())
+      {
+        found = true;
+        itr += it->size();
+        if (!chunk.empty())
+        {
+          //auto i = this->operators.find(chunk);
+          //if (i != this->operators.end())
+          //{
+          //  if (i->second.unary)
+          //  {
+          //    // (-5)
+          //    // -5
+          //    if (!parts.empty())
+          //    {
+          //      if (parts.back() == " ")
+          //      {
+
+          //      }
+          //    }
+          //  }
+          //}
+          parts.push_back(chunk);
+          chunk.clear();
+        }
+        parts.push_back(*it);
+        break;
+      }
     }
     if (!found)
     {
@@ -205,35 +229,39 @@ std::vector<std::string> Calculator::split(const std::string& input)
       itr++;
     }
   }
-  /*for (auto& part : input)
+  // Add *'s
+  if (parts.size() > 1)
   {
-    if (part == ' ')
+    auto itr = parts.begin();
+    while (itr != parts.end())
     {
-      continue;
-    }
-    flag = false;
-    for (auto& delimiter : delimiters)
-    {
-      if (part == delimiter)
+      if (itr + 1 != parts.end())
       {
-        flag = true;
-        if (!chunk.empty())
+        if ((*itr == ")" && *(itr + 1) == "(") ||
+            (this->isConstant(*itr) && *(itr + 1) == "(") ||
+            (*itr == ")" && this->isConstant(*(itr + 1))) ||
+            (this->isConstant(*itr) && this->isConstant(*(itr + 1))))
         {
-          parts.push_back(chunk);
+          auto offset = itr - parts.begin();
+          parts.insert(itr + 1, "*");
+          itr = parts.begin() + offset + 1;
         }
-        parts.emplace_back(1, delimiter);
-        chunk = "";
+        else
+        {
+          itr++;
+        }
+      }
+      else
+      {
         break;
       }
     }
-    if (!flag)
-    {
-      chunk += part;
-    }
   }
-  if (!chunk.empty())
-  {
-    parts.push_back(chunk);
-  }*/
   return parts;
+}
+
+bool Calculator::isConstant(const std::string& input)
+{
+  return (this->operators.find(input) == this->operators.end() &&
+          input != "(" && input != ")");
 }
