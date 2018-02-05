@@ -72,7 +72,6 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
             term = std::make_unique<Expression>();
             Expression *e = dynamic_cast<Expression *>(term.get());
             this->parse(std::vector<std::string>{ parts.begin(), itr }, e->left);
-
             e->opr = this->operators.find(*itr)->second.second;
             this->parse(std::vector<std::string>{ itr + 1, parts.end() }, e->right);
             return;
@@ -114,23 +113,22 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
         if (parentheses < 1)
         {
           // We've exited the function call parentheses, add from offset til end in the argument vector
-          f->args.push_back(nullptr);
-          this->parse({ offset, i }, f->args.back());
-          break;
-        }
-        if (parentheses == 1)
-        {
-          if (*i == ",")
+          if (offset != i)
           {
             f->args.push_back(nullptr);
             this->parse({ offset, i }, f->args.back());
-            offset = i + 1;
           }
+          break;
+        }
+        if (parentheses == 1 && *i == ",")
+        {
+            f->args.push_back(nullptr);
+            this->parse({ offset, i }, f->args.back());
+            offset = i + 1;
         }
       }
     }
   }
-  return;
 }
 
 std::vector<std::string> Calculator::split(const std::string& input)
@@ -185,29 +183,23 @@ std::vector<std::string> Calculator::split(const std::string& input)
     {
       continue;
     }
-    size_t min = input.size();
-    size_t offset;
-    std::string found;
+    bool found = false;
     for (auto it = delimiters.begin(); it != delimiters.end(); ++it)
     {
-      offset = input.find(*it, itr - input.begin());
-      if (offset < min)
-      {
-        min = offset;
-        found = *it;
-      }
+      auto a = std::find(input.begin(), input.end(), "hello");
+  //    if (std::find(itr, input.end(), *it) < itr + it->size())
+  //    {
+  //      found = true;
+  //      itr += it->size();
+  //      if (!chunk.empty())
+  //      {
+  //        parts.push_back(chunk);
+  //        chunk.clear();
+  //      }
+  //      break;
+  //    }
     }
-    if (offset < input.size())
-    {
-      itr += found.size();
-      if (!chunk.empty())
-      {
-        parts.push_back(chunk);
-        chunk.clear();
-      }
-      parts.push_back(found);
-    }
-    else
+    if (!found)
     {
       chunk += *itr;
       itr++;
