@@ -6,27 +6,28 @@
 #include "operands/Expression.h"
 #include "operands/FunctionCall.h"
 
-double Calculator::assign(const std::vector<std::string>& parts)
-{
-
-}
-
-double Calculator::calculate(const std::vector<std::string>& parts)
-{
-  this->parse(parts, this->expression);
-  return this->expression->calc();
-}
-
-double Calculator::evaluate(const std::string & input)
+double Calculator::evaluate(const std::string& input)
 {
   this->expression = nullptr;
-  auto split = this->split(input);
-  return this->calculate(split);
+  auto parts = this->split(input);
+  this->validate(parts);
+  if (parts.size() > 1)
+  {
+    if (auto itr = this->variables.find(parts.at(0)); itr != this->variables.end() && parts.at(1) == "=")
+    {
+      if (itr->second.first)
+      {
+        this->parse({ parts.begin() + 2, parts.end() }, this->expression);
+        return itr->second.second = this->expression->calc();
+      }
+    }
+  }
+  this->parse(parts, this->expression);
+  return this->variables.find("ans")->second.second = this->expression->calc();
 }
 
 void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term)
 {
-  //TODO: assign to variable
   // Remove unnecessary parentheses
   while (parts.at(0) == "(" && parts.at(parts.size() - 1) == ")")
   {
@@ -39,16 +40,17 @@ void Calculator::parse(std::vector<std::string> parts, std::unique_ptr<Operand>&
   }
   else if (parts.size() == 1)
   {
-    // Find the variable
-    auto itr = this->constants.find(parts.at(0));
-    if (itr != this->constants.end())
+    if (auto itr = this->variables.find(parts.at(0)); itr != this->variables.end())
+    {
+      term = std::make_unique<Constant>(itr->second.second);
+      return;
+    }
+    if (auto itr = this->constants.find(parts.at(0)); itr != this->constants.end())
     {
       term = std::make_unique<Constant>(itr->second);
+      return;
     }
-    else
-    {
-      term = std::make_unique<Constant>(std::stod(parts.at(0)));
-    }
+    term = std::make_unique<Constant>(std::stod(parts.at(0)));
     return;
   }
   int operatorLevel = 0;
@@ -151,36 +153,46 @@ std::vector<std::string> Calculator::split(const std::string& input)
   std::string chunk;
   std::vector<std::string> parts;
   std::vector<std::string> delimiters;
-  for (auto itr = this->operators.begin(); itr != this->operators.end(); ++itr)
+  for (auto& itr : this->operators)
   {
-    delimiters.push_back(itr->first);
+    delimiters.push_back(itr.first);
   }
-  for (auto itr = this->functions.begin(); itr != this->functions.end(); ++itr)
+  for (auto& function : this->functions)
   {
-    delimiters.push_back(itr->first);
+    delimiters.push_back(function.first);
   }
-  for (auto itr = this->constants.begin(); itr != this->constants.end(); ++itr)
+  for (auto& constant : this->constants)
   {
-    delimiters.push_back(itr->first);
+    delimiters.push_back(constant.first);
   }
-  for (auto itr = this->variables.begin(); itr != this->variables.end(); ++itr)
+  for (auto& variable : this->variables)
   {
-    delimiters.push_back(itr->first);
+    delimiters.push_back(variable.first);
+  }
+  for (auto& bracket : this->brackets)
+  {
+    delimiters.push_back(bracket.second.first);
+    delimiters.push_back(bracket.second.second);
+  }
+  for (auto& miscSplitter : this->miscSplitters)
+  {
+    delimiters.push_back(miscSplitter);
   }
   for (auto itr = input.begin(); itr != input.end();)
   {
     if (*itr == ' ')
     {
+      itr++;
       continue;
     }
     bool found = false;
-    for (auto it = delimiters.begin(); it != delimiters.end(); ++it)
+    for (auto & delimiter : delimiters)
     {
-      auto a = input.find(*it, itr - input.begin());
+      auto a = input.find(delimiter, itr - input.begin());
       if (a == itr - input.begin())
       {
         found = true;
-        itr += it->size();
+        itr += delimiter.size();
         bool unaryFound = false;
         if (!parts.empty())
         {
@@ -191,18 +203,18 @@ std::vector<std::string> Calculator::split(const std::string& input)
               if (opr.second.unary)
               {
                 if ((parts.size() > 1 && *(parts.end() - 2) == "(") ||
-                  (parts.size() == 0))
+                    parts.empty())
                 {
                   unaryFound = true;
                   if (chunk.empty())
                   {
-                    parts.back() += *it;
+                    parts.back() += delimiter;
                     break;
                   }
                   else
                   {
                     parts.back() += chunk;
-                    parts.push_back(*it);
+                    parts.push_back(delimiter);
                     chunk.clear();
                     break;
                   }
@@ -220,7 +232,7 @@ std::vector<std::string> Calculator::split(const std::string& input)
           parts.push_back(chunk);
           chunk.clear();
         }
-        parts.push_back(*it);
+        parts.push_back(delimiter);
         break;
       }
     }
@@ -230,39 +242,151 @@ std::vector<std::string> Calculator::split(const std::string& input)
       itr++;
     }
   }
+  if (!chunk.empty())
+  {
+    parts.push_back(chunk);
+  }
   // Add *'s
   if (parts.size() > 1)
   {
     auto itr = parts.begin();
     while (itr != parts.end())
     {
-      if (itr + 1 != parts.end())
-      {
-        if ((*itr == ")" && *(itr + 1) == "(") ||
-          (this->isConstant(*itr) && *(itr + 1) == "(") ||
-            (*itr == ")" && this->isConstant(*(itr + 1))) ||
-            (this->isConstant(*itr) && this->isConstant(*(itr + 1))))
-        {
-          auto offset = itr - parts.begin();
-          parts.insert(itr + 1, "*");
-          itr = parts.begin() + offset + 1;
-        }
-        else
-        {
-          itr++;
-        }
-      }
-      else
+      if (itr + 1 == parts.end())
       {
         break;
       }
+      // ") (" and later on "} {"
+      if (!(this->isCloseBracket(*itr) && this->isOpenBracket(*(itr + 1))))
+      {
+        if (!((this->isConstant(*itr) || this->isVariable(*itr)) && this->isOpenBracket(*(itr + 1))))
+        {
+          // "5 (" or "pi (" or "A ("
+          // ") pi" or ") root" or ") ans"
+          if (!(this->isCloseBracket(*itr) && (this->isConstant(*(itr + 1)) || this->isFunction(*(itr + 1)) || this->isVariable(*(itr + 1)))))
+          {
+            // "5 5"    "5 A"     "5 log" 
+            // "pi e"   "pi C"    "pi root" 
+            // "ans pi" "ans ans" "ans log"
+            if (!((this->isConstant(*itr) || this->isVariable(*itr)) && (this->isConstant(*(itr + 1)) || this->isVariable(*(itr + 1)) || this->isFunction(*(itr + 1)))))
+            {
+              itr++;
+              continue;
+            }
+          }
+        }
+      }
+      auto offset = itr - parts.begin();
+      parts.insert(itr + 1, "*");
+      itr = parts.begin() + offset + 1;
     }
   }
   return parts;
 }
 
+#include <stack>
+
+void Calculator::validate(const std::vector<std::string>& parts)
+{
+  std::stack<int> opening;
+  std::stack<int> closing;
+  for (auto& part : parts)
+  {
+    if (this->isOpenBracket(part))
+    {
+      for (auto& bracket : this->brackets)
+      {
+        if (bracket.second.first == part)
+        {
+          opening.push(bracket.first);
+          continue;
+        }
+      }
+    }
+    else if (this->isCloseBracket(part))
+    {
+      for (auto& bracket : this->brackets)
+      {
+        if (bracket.second.second == part)
+        {
+          if (opening.top() == bracket.first)
+          {
+            opening.pop();
+          }
+          else
+          {
+            closing.push(bracket.first);
+          }
+          continue;
+        }
+      }
+    }
+  }
+}
+
 bool Calculator::isConstant(const std::string& input)
 {
-  return (this->operators.find(input) == this->operators.end() &&
-          input != "(" && input != ")");
+  if (this->constants.find(input) != this->constants.end())
+  {
+    return true;
+  }
+  try
+  {
+    std::stod(input);
+    return true;
+  }
+  catch (std::invalid_argument)
+  {
+
+  }
+  return false;
+}
+
+bool Calculator::isFunction(const std::string& input)
+{
+  return this->functions.find(input) != this->functions.end();
+}
+
+bool Calculator::isOperator(const std::string& input)
+{
+  return this->operators.find(input) != this->operators.end();
+}
+
+bool Calculator::isVariable(const std::string& input)
+{
+  return this->variables.find(input) != this->variables.end();
+}
+
+bool Calculator::isBracket(const std::string& input)
+{
+  for (auto& bracket : this->brackets)
+  {
+    if (input == bracket.second.first || input == bracket.second.second)
+      return true;
+  }
+  return false;
+}
+
+bool Calculator::isOpenBracket(const std::string& input)
+{
+  for (auto& bracket : this->brackets)
+  {
+    if (input == bracket.second.first)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Calculator::isCloseBracket(const std::string& input)
+{
+  for (auto& bracket : this->brackets)
+  {
+    if (input == bracket.second.second)
+    {
+      return true;
+    }
+  }
+  return false;
 }

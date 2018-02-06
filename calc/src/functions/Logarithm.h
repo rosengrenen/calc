@@ -24,6 +24,7 @@ public:
         base = this->arguments.at(1);
       }
     }
+    this->arguments.clear();
     // Check for rounding errors
     if (base == 0.0)
     {

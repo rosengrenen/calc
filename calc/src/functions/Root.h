@@ -24,6 +24,7 @@ public:
         n = this->arguments.at(1);
       }
     }
+    this->arguments.clear();
     return std::pow(value, 1.0 / n);
   }
 };

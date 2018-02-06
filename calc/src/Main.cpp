@@ -11,8 +11,15 @@
 int main(int argc, char **argv)
 {
   Calculator c;
-  double result = c.evaluate("5+5");
-  std::cout << result << std::endl;
-  std::cin.get();
+  std::string input;
+  bool running = true;
+  double result;
+  while (running)
+  {
+    std::cout << "> ";
+    std::getline(std::cin, input);
+    result = c.evaluate(input);
+    std::cout << result << std::endl;
+  }
   return 0;
 }
