@@ -2,12 +2,12 @@
 
 #include "Operator.h"
 
-class Multiplication : public Operator
+class Assignment : public Operator
 {
 public:
   double& calc(double& left, double& right) override
   {
-    this->result = left * right;
-    return this->result;
+    left = right;
+    return right;
   }
 };

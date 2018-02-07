@@ -11,7 +11,7 @@ class FunctionCall : public Operand
 public:
   std::shared_ptr<Function> func;
   std::vector<std::unique_ptr<Operand>> args;
-  virtual double calc() override
+  double& calc() override
   { 
     for (auto& arg : args)
     {

@@ -6,5 +6,5 @@
 class Operand
 {
 public:
-  virtual double calc() = 0;
+  virtual double& calc() = 0;
 };

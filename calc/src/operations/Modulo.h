@@ -7,8 +7,9 @@
 class Modulo : public Operator
 {
 public:
-  virtual double calc(double left, double right) override
+  double& calc(double& left, double& right) override
   {
-    return std::fmod(left, right);
+    this->result = std::fmod(left, right);
+    return this->result;
   }
 };

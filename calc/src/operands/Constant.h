@@ -7,11 +7,15 @@
 class Constant : public Operand
 {
 public:
-  double value;
-  Constant(double value) : value(value)
+  Constant(double& value, bool) : value(value)
   { }
-  virtual double calc() override
+  Constant(double value) : value(this->placeholder), placeholder(value)
+  { }
+  double& calc() override
   {
     return this->value;
   }
+private:
+  double& value;
+  double placeholder;
 };

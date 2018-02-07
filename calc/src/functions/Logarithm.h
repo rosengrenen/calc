@@ -7,7 +7,7 @@
 class Logarithm : public Function
 {
 public:
-  virtual double calc() override
+  double& calc() override
   {
     double value;
     double base = 10;
@@ -31,6 +31,7 @@ public:
       //TODO: Error check
       throw 0;
     }
-    return std::log(value) / std::log(base);
+    this->result = std::log(value) / std::log(base);
+    return this->result;
   }
 };

@@ -7,7 +7,7 @@
 class Root : public Function
 {
 public:
-  virtual double calc() override
+  double& calc() override
   {
     double value;
     double n = 2;
@@ -25,6 +25,7 @@ public:
       }
     }
     this->arguments.clear();
-    return std::pow(value, 1.0 / n);
+    this->result = std::pow(value, 1.0 / n);
+    return this->result;
   }
 };

@@ -7,8 +7,9 @@
 class Exponentiation : public Operator
 {
 public:
-  virtual double calc(double left, double right) override
+  double& calc(double& left, double& right) override
   {
-    return std::pow(left, right);
+    this->result = std::pow(left, right);
+    return this->result;
   }
 };

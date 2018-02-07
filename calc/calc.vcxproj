@@ -24,16 +24,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Calculator.h" />
+    <ClInclude Include="src\errors\CalculatorException.h" />
+    <ClInclude Include="src\errors\InvalidInputException.h" />
+    <ClInclude Include="src\errors\UnmatchedBracketException.h" />
     <ClInclude Include="src\functions\Function.h" />
     <ClInclude Include="src\functions\Logarithm.h" />
     <ClInclude Include="src\functions\Root.h" />
     <ClInclude Include="src\operands\Constant.h" />
+    <ClInclude Include="src\operands\Expression.h" />
     <ClInclude Include="src\operands\FunctionCall.h" />
     <ClInclude Include="src\operands\Operand.h" />
-    <ClInclude Include="src\operands\Expression.h" />
     <ClInclude Include="src\operations\Addition.h" />
     <ClInclude Include="src\operations\Division.h" />
     <ClInclude Include="src\operations\Exponentiation.h" />
+    <ClInclude Include="src\operations\Assignment.h" />
     <ClInclude Include="src\operations\Modulo.h" />
     <ClInclude Include="src\operations\Multiplication.h" />
     <ClInclude Include="src\operations\Operator.h" />

@@ -5,8 +5,9 @@
 class Subtraction : public Operator
 {
 public:
-  virtual double calc(double left, double right) override
+  double& calc(double& left, double& right) override
   {
-    return left - right;
+    this->result = left - right;
+    return this->result;
   }
 };

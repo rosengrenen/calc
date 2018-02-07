@@ -8,18 +8,27 @@
 
 #include "Calculator.h"
 
+#include "errors/UnmatchedBracketException.h"
+
+#include "operands/FunctionCall.h"
+
 int main(int argc, char **argv)
 {
+  
   Calculator c;
   std::string input;
-  bool running = true;
-  double result;
-  while (running)
+  while (true)
   {
     std::cout << "> ";
     std::getline(std::cin, input);
-    result = c.evaluate(input);
-    std::cout << result << std::endl;
+    try
+    {
+      std::cout << c.evaluate(input) << std::endl;
+    }
+    catch (const UnmatchedBracketException& e)
+    {
+      std::cout << e.what() << std::endl;
+    }
   }
   return 0;
 }

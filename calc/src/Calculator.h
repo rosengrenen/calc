@@ -13,6 +13,7 @@
 #include "functions/Root.h"
 
 #include "operations/Operator.h"
+#include "operations/Assignment.h"
 #include "operations/Addition.h"
 #include "operations/Division.h"
 #include "operations/Exponentiation.h"
@@ -35,7 +36,7 @@ private:
   std::unique_ptr<Operand> expression;
   std::unordered_map<std::string, std::shared_ptr<Function>> functions = {
     { "root",   std::make_shared<Root>()      },
-    { "log",    std::make_shared<Logarithm>() }
+    { "log",    std::make_shared<Logarithm>() },
   };
   std::unordered_map<std::string, OperatorRule> operators {
     { "+", { false, 0, std::make_shared<Addition>()       } },
@@ -43,11 +44,12 @@ private:
     { "*", { false, 1, std::make_shared<Multiplication>() } },
     { "/", { false, 1, std::make_shared<Division>()       } },
     { "%", { false, 1, std::make_shared<Modulo>()         } },
-    { "^", { false, 2, std::make_shared<Exponentiation>() } }
+    { "^", { false, 2, std::make_shared<Exponentiation>() } },
+    { "=", { false, 3, std::make_shared<Assignment>()     } },
   };
   std::unordered_map<std::string, double> constants {
     { std::make_pair("e",   2.718281828459045235) },
-    { std::make_pair("pi",  3.141592653589793238) }
+    { std::make_pair("pi",  3.141592653589793238) },
   };
   std::unordered_map<std::string, std::pair<bool, double>> variables {
     { "ans",  std::make_pair(false, 0.0) },
@@ -76,26 +78,31 @@ private:
     { "W",    std::make_pair(true,  0.0) },
     { "X",    std::make_pair(true,  0.0) },
     { "Y",    std::make_pair(true,  0.0) },
-    { "Z",    std::make_pair(true,  0.0) }
+    { "Z",    std::make_pair(true,  0.0) },
   };
   std::unordered_map<int, std::pair<std::string, std::string>> brackets {
     { 0, std::make_pair("(", ")") },
     { 1, std::make_pair("{", "}") },
-    { 2, std::make_pair("[", "]") }
+    { 2, std::make_pair("[", "]") },
   };
   std::vector<std::string> miscSplitters { 
     "=", 
-    "," 
+    ",", 
   };
   void parse(std::vector<std::string> parts, std::unique_ptr<Operand>& term);
   std::vector<std::string> split(const std::string& input);
-  void validate(const std::vector<std::string>& parts);
+  void validateBrackets(std::vector<std::string>& parts);
+  void addAsterisks(std::vector<std::string>& parts);
+  void trimBrackets(std::vector<std::string>& parts);
+  void parseValue(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term);
+  void parseOperator(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term);
+  void parseFunction(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term);
   bool isConstant(const std::string& input);
   bool isVariable(const std::string& input);
   bool isFunction(const std::string& input);
   bool isOperator(const std::string& input);
   bool isBracket(const std::string& input);
-  bool isOpenBracket(const std::string& input);
-  bool isCloseBracket(const std::string& input);
+  bool isOpeningBracket(const std::string& input);
+  bool isClosingBracket(const std::string& input);
 };
 
