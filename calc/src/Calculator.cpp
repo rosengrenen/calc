@@ -90,7 +90,7 @@ std::vector<std::string> Calculator::split(const std::string& input)
           {
             if (parts.back() == opr.first)
             {
-              if (opr.second.unary)
+              if (std::get<1>(opr.second))
               {
                 if ((parts.size() > 1 && *(parts.end() - 2) == "(") ||
                     parts.empty())
@@ -203,7 +203,7 @@ void Calculator::validateBrackets(std::vector<std::string>& parts)
 }
 
 void Calculator::addAsterisks(std::vector<std::string>& parts)
-{ 
+{
   if (parts.size() > 1)
   {
     auto itr = parts.begin();
@@ -257,7 +257,7 @@ void Calculator::trimBrackets(std::vector<std::string>& parts)
 }
 
 void Calculator::parseValue(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term)
-{ 
+{
   if (auto itr = this->variables.find(parts.at(0)); itr != this->variables.end())
   {
     if (itr->second.first)
@@ -275,11 +275,15 @@ void Calculator::parseValue(const std::vector<std::string>& parts, std::unique_p
     term = std::make_unique<Constant>(itr->second);
     return;
   }
-  term = std::make_unique<Constant>(std::stod(parts.at(0)));
+  if (this->isConstant(parts.at(0)))
+  {
+    term = std::make_unique<Constant>(std::stod(parts.at(0)));
+  }
+  throw InvalidInputException("Invalid input at ...");
 }
 
 void Calculator::parseOperator(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term)
-{ 
+{
   bool flag = true;
   for (int oprLevel = 0; flag; ++oprLevel)
   {
@@ -288,7 +292,7 @@ void Calculator::parseOperator(const std::vector<std::string>& parts, std::uniqu
     {
       for (auto& opr : this->operators)
       {
-        if (opr.second.order == oprLevel)
+        if (std::get<2>(opr.second) == oprLevel)
         {
           flag = true;
           if (opr.first == *itr)
@@ -310,7 +314,7 @@ void Calculator::parseOperator(const std::vector<std::string>& parts, std::uniqu
               term = std::make_unique<Expression>();
               Expression *e = dynamic_cast<Expression *>(term.get());
               this->parse(std::vector<std::string>{ parts.begin(), itr }, e->left);
-              e->opr = this->operators.find(*itr)->second.opr;
+              e->opr = std::get<0>(this->operators.find(*itr)->second);
               this->parse(std::vector<std::string>{ itr + 1, parts.end() }, e->right);
               return;
             }
@@ -324,7 +328,7 @@ void Calculator::parseOperator(const std::vector<std::string>& parts, std::uniqu
 }
 
 void Calculator::parseFunction(const std::vector<std::string>& parts, std::unique_ptr<Operand>& term)
-{ 
+{
   for (auto itr = parts.begin(); itr != parts.end(); ++itr)
   {
     if (this->isFunction(*itr))

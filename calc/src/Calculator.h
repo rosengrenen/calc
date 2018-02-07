@@ -2,9 +2,9 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <unordered_map>
-#include <utility>
 
 #include "operands/Operand.h"
 
@@ -38,14 +38,14 @@ private:
     { "root",   std::make_shared<Root>()      },
     { "log",    std::make_shared<Logarithm>() },
   };
-  std::unordered_map<std::string, OperatorRule> operators {
-    { "+", { false, 0, std::make_shared<Addition>()       } },
-    { "-", { true,  0, std::make_shared<Subtraction>()    } },
-    { "*", { false, 1, std::make_shared<Multiplication>() } },
-    { "/", { false, 1, std::make_shared<Division>()       } },
-    { "%", { false, 1, std::make_shared<Modulo>()         } },
-    { "^", { false, 2, std::make_shared<Exponentiation>() } },
-    { "=", { false, 3, std::make_shared<Assignment>()     } },
+  std::unordered_map<std::string, std::tuple<std::shared_ptr<Operator>, bool, int>> operators {
+    { "+", std::make_tuple(std::make_shared<Addition>(),       false, 0) },
+    { "-", std::make_tuple(std::make_shared<Subtraction>(),    true,  0) },
+    { "*", std::make_tuple(std::make_shared<Multiplication>(), false, 1) },
+    { "/", std::make_tuple(std::make_shared<Division>(),       false, 1) },
+    { "%", std::make_tuple(std::make_shared<Modulo>(),         false, 1) },
+    { "^", std::make_tuple(std::make_shared<Exponentiation>(), false, 2) },
+    { "=", std::make_tuple(std::make_shared<Assignment>(),     false, 3) },
   };
   std::unordered_map<std::string, double> constants {
     { std::make_pair("e",   2.718281828459045235) },
