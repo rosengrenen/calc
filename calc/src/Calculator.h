@@ -1,16 +1,30 @@
 #pragma once
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <tuple>
 #include <vector>
 #include <unordered_map>
 
-#include "operands/Operand.h"
+#include "Constants.h"
+
+#include "errors/InvalidInputException.h"
+#include "errors/UnmatchedBracketException.h"
 
 #include "functions/Function.h"
 #include "functions/Logarithm.h"
 #include "functions/Root.h"
+#include "functions/Sin.h"
+#include "functions/Asin.h"
+#include "functions/Cos.h"
+#include "functions/Acos.h"
+#include "functions/Tan.h"
+#include "functions/Atan.h"
+#include "functions/Rad.h"
+#include "functions/Deg.h"
+
+#include "operands/Operand.h"
 
 #include "operations/Operator.h"
 #include "operations/Assignment.h"
@@ -21,22 +35,23 @@
 #include "operations/Multiplication.h"
 #include "operations/Subtraction.h"
 
-struct OperatorRule
-{
-  bool unary;
-  int order;
-  std::shared_ptr<Operator> opr;
-};
-
 class Calculator
 {
 public:
   double evaluate(const std::string& input);
 private:
   std::unique_ptr<Operand> expression;
-  std::unordered_map<std::string, std::shared_ptr<Function>> functions = {
+  std::unordered_map<std::string, std::shared_ptr<Function>> functions {
     { "root",   std::make_shared<Root>()      },
     { "log",    std::make_shared<Logarithm>() },
+    { "sin",    std::make_shared<Sin>()       },
+    { "asin",   std::make_shared<Asin>()      },
+    { "cos",    std::make_shared<Cos>()       },
+    { "acos",   std::make_shared<Acos>()      },
+    { "tan",    std::make_shared<Tan>()       },
+    { "atan",   std::make_shared<Atan>()      },
+    { "rad",    std::make_shared<Rad>()       },
+    { "deg",    std::make_shared<Deg>()       },
   };
   std::unordered_map<std::string, std::tuple<std::shared_ptr<Operator>, bool, int>> operators {
     { "+", std::make_tuple(std::make_shared<Addition>(),       false, 0) },
@@ -48,8 +63,9 @@ private:
     { "=", std::make_tuple(std::make_shared<Assignment>(),     false, 3) },
   };
   std::unordered_map<std::string, double> constants {
-    { std::make_pair("e",   2.718281828459045235) },
-    { std::make_pair("pi",  3.141592653589793238) },
+    { std::make_pair("e",   Constants::e)   },
+    { std::make_pair("pi",  Constants::pi)  },
+    { std::make_pair("phi", Constants::phi) },
   };
   std::unordered_map<std::string, std::pair<bool, double>> variables {
     { "ans",  std::make_pair(false, 0.0) },

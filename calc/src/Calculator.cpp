@@ -1,10 +1,11 @@
+/*
+ * TODO
+ * Factorial
+ */
+
 #include "Calculator.h"
 
-#include <algorithm>
 #include <stack>
-
-#include "errors/InvalidInputException.h"
-#include "errors/UnmatchedBracketException.h"
 
 #include "operands/Constant.h"
 #include "operands/Expression.h"

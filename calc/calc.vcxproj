@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -24,12 +24,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Calculator.h" />
+    <ClInclude Include="src\Constants.h" />
     <ClInclude Include="src\errors\CalculatorException.h" />
     <ClInclude Include="src\errors\InvalidInputException.h" />
     <ClInclude Include="src\errors\UnmatchedBracketException.h" />
+    <ClInclude Include="src\functions\Acos.h" />
+    <ClInclude Include="src\functions\Asin.h" />
+    <ClInclude Include="src\functions\Atan.h" />
+    <ClInclude Include="src\functions\Cos.h" />
+    <ClInclude Include="src\functions\Deg.h" />
     <ClInclude Include="src\functions\Function.h" />
     <ClInclude Include="src\functions\Logarithm.h" />
+    <ClInclude Include="src\functions\Rad.h" />
     <ClInclude Include="src\functions\Root.h" />
+    <ClInclude Include="src\functions\Sin.h" />
+    <ClInclude Include="src\functions\Tan.h" />
     <ClInclude Include="src\operands\Constant.h" />
     <ClInclude Include="src\operands\Expression.h" />
     <ClInclude Include="src\operands\FunctionCall.h" />
@@ -119,6 +128,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,6 +141,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,6 +156,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -160,6 +175,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

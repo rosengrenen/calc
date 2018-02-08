@@ -1,21 +1,11 @@
-#include <complex>
 #include <iostream>
-#include <vector>
-
 #include <string>
-#include <algorithm>
-#include <utility>
+#include <vector>
 
 #include "Calculator.h"
 
-#include "errors/UnmatchedBracketException.h"
-#include "errors/InvalidInputException.h"
-
-#include "operands/FunctionCall.h"
-
 int main(int argc, char **argv)
 {
-  
   Calculator c;
   std::string input;
   while (true)
